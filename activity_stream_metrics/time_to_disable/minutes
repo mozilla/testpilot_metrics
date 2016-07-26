@@ -1,0 +1,26 @@
+WITH disabled_clients AS
+  (SELECT client_id, MAX(receive_at) AS last_disabled
+  FROM activity_stream_events_daily
+  WHERE event = 'disable'
+  GROUP BY client_id),
+
+usage_dates AS
+  (SELECT disabled_clients.client_id,
+      MIN(receive_at) first_visit,
+      MAX(receive_at) last_visit,
+      MIN(disabled_clients.last_disabled) last_disabled
+  FROM disabled_clients
+  LEFT JOIN activity_stream_stats_daily stats
+  ON disabled_clients.client_id = stats.client_id
+  GROUP BY disabled_clients.client_id),
+
+total AS
+  (SELECT COUNT(DISTINCT client_id)
+  FROM usage_dates)
+
+SELECT DATEDIFF('minute', first_visit, last_disabled) AS hours_enabled, COUNT(DISTINCT client_id) / MAX(total.count)::float * 100 AS percent_disabled
+FROM usage_dates, total
+WHERE last_visit <= last_disabled
+AND DATEDIFF('minute', first_visit, last_disabled) <= 60
+GROUP BY hours_enabled
+ORDER BY hours_enabled
