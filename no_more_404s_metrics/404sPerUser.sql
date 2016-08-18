@@ -7,12 +7,16 @@
  */
 
 SELECT
-  date        AS date,
-  IF(num_actions >= 9,
-    '9+ 404s',
-    concat(cast(num_actions AS varchar),' 404s')
-  )           AS num_404s,
-  count(*)    AS num_users
+  date             AS date,
+  IF(num_actions = 1, -- Label logics
+    '1',
+    IF(num_actions >= 64,
+      '64+',
+      concat(concat(cast(num_actions AS varchar),'-'),cast((2*num_actions-1) AS varchar))
+    )
+  )                AS num_404s,
+  max(num_actions) AS num_actions,
+  count(*)         AS num_users
 FROM
   (SELECT -- Change commented lines to make this week based
     /*from_unixtime(7*24*60*60*floor((
@@ -21,9 +25,9 @@ FROM
     )/7))                                                       AS date, -- Week*/
     from_unixtime(24*60*60*floor(ts/(1000*1000*1000*24*60*60))) AS date, -- Day
     uuid                                                        AS uuid,
-    count(*)                                                    AS num_actions
+    cast(pow(2,floor(log2(count(*)))) as bigint)                AS num_actions -- Powers of 2
   FROM wayback_daily
-  WHERE
+  WHERE 
     uuid IS NOT NULL
     AND ts >= 1000*1000*1000*floor(to_unixtime(CURRENT_TIMESTAMP)/(24*60*60) - 9*7)*(24*60*60)  -- Min Date (Today - 9 weeks)
     AND ts >= 1000*1000*1000*to_unixtime(date_parse('20160804', '%Y%m%d')) -- Min Date (2016-08-04)
@@ -31,4 +35,4 @@ FROM
   GROUP BY 1,2
   )
 GROUP BY 1,2
-ORDER BY 1,2
+ORDER BY 3,1
