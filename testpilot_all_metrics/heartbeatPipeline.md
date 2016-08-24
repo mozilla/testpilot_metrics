@@ -42,6 +42,13 @@ Each experiment outputs to its own Sheet in [this Spreadsheet](https://docs.goog
 #### Google Sheets -> Re:dash
 We've given the Re:dash pipeline user<sup>1</sup> access to the Spreadsheet so that we can query it directly.
 
+## Validation
+Things that I've validated
+* Correct rating/interval/etc data flows into Google Sheets
+* You can input formulas from SG into Google Sheets
+* Google Sheets does not need an actual client view to update the formulas
+* Re:dash Charts look reasonable and update
+
 ## Links
 * Re:dash
   * Queries
