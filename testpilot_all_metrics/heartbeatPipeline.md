@@ -49,6 +49,14 @@ Things that I've validated
 * Google Sheets does not need an actual client view to update the formulas
 * Re:dash Charts look reasonable and update
 
+## The Future
+
+### Known Failure Conditions
+Google Sheets are limited to 2 million cells.  We collect 14 cells per response.  This means that we can collect approximately 140,000 responses before this needs refactored.  As of 2016/08/25 we have 10700 HB responses in all experiments, so we should have decent headroom.  **We do not know if Google Sheets formula computing delays may become more of a bottleneck than storage constraints.**
+
+### Making things less janky e.g Productionizing the Pipeline
+If we're happy with the data that we're receiving, then we should probably move everything into a telemetry-based workflow.  It is designed to scale and has dozens of real engineers that can help us instead of one analyst who's decent at hacking workarounds :).  This is how things work in Firefox Desktop Heartbeat.
+
 ## Links
 * Re:dash
   * Queries
