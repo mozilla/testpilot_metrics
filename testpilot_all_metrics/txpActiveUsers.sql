@@ -112,5 +112,5 @@ FROM  ( -- This unions Experiment data with General Data
             --newUsers.num_new_users
         )
     )
-WHERE date > DATE_ADD('day', -7*9, CURRENT_TIMESTAMP) -- Last 60 days
+WHERE date > DATE_ADD('day', -7*9, CURRENT_TIMESTAMP)
 ORDER BY 1, 2
