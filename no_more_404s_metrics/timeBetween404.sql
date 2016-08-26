@@ -6,7 +6,6 @@
  * Dashboard: https://sql.telemetry.mozilla.org/dashboard/wayback-machine-no-more-404s-executive-summary
  */
 
-
 WITH tmp_user_times AS ( -- Get ping times by user
     SELECT
       uuid                AS uuid,
@@ -14,15 +13,15 @@ WITH tmp_user_times AS ( -- Get ping times by user
     FROM wayback_daily
     WHERE
       uuid IS NOT NULL
-      AND ts >= 1000*1000*1000*floor(to_unixtime(CURRENT_TIMESTAMP)/(24*60*60) - 9*7)*(24*60*60)  -- Min Date (Today - 9 weeks)
-      AND ts >= 1000*1000*1000*to_unixtime(date_parse('20160804', '%Y%m%d')) -- Min Date (2016-08-04)
-      AND ts <  1000*1000*1000*floor(to_unixtime(CURRENT_TIMESTAMP)/(24*60*60))*(24*60*60) -- Max Date (yesterday)
+      AND ts >= 1000*1000*1000*FLOOR(TO_UNIXTIME(CURRENT_TIMESTAMP)/(24*60*60) - 9*7)*(24*60*60)  -- Min Date (Today - 9 weeks)
+      AND ts >= 1000*1000*1000*TO_UNIXTIME(DATE_PARSE('20160804', '%Y%m%d')) -- Min Date (2016-08-04)
+      AND ts <  1000*1000*1000*FLOOR(TO_UNIXTIME(CURRENT_TIMESTAMP)/(24*60*60))*(24*60*60) -- Max Date (yesterday)
   ),
   tmp_ping_data AS ( -- Get ping time vs previous ping by user
     SELECT
       endPing.uuid                                                                            AS uuid,
       endPing.ts                                                                              AS ts,
-      MIN(if(endPing.ts > startPing.ts, floor((endPing.ts - startPing.ts)/(24*60*60)), 1000)) AS time_between
+      MIN(IF(endPing.ts > startPing.ts, FLOOR((endPing.ts - startPing.ts)/(24*60*60)), 1000)) AS time_between
     FROM   tmp_user_times AS startPing
       JOIN tmp_user_times AS endPing   ON(startPing.uuid = endPing.uuid)
     WHERE endPing.ts >= startPing.ts -- Make sure that the ordering is appropriate
@@ -34,12 +33,11 @@ SELECT
     'Inf',
     IF(time_between>=9,
        '9+',
-       cast(cast(time_between AS bigint) AS varchar)
+       CAST(CAST(time_between AS bigint) AS varchar)
     )
   )                             AS time_between,
-  100.0*count(*)/max(total.cnt) AS num_pings
+  100.0*COUNT(*)/MAX(total.cnt) AS num_pings
 FROM tmp_ping_data
   CROSS JOIN (SELECT COUNT(*) AS cnt FROM tmp_ping_data) AS total
 GROUP BY 1
 ORDER BY 1
-
