@@ -7,11 +7,12 @@
  */
 
 SELECT -- Change commented lines to make this day/week based
-  FROM_UNIXTIME(7*24*60*60*FLOOR((
-      ts/(1000*1000*1000*24*60*60) -- Day
-       - (FLOOR(TO_UNIXTIME(CURRENT_TIMESTAMP)/(24*60*60))) % 7 -- Day Number
-    )/7))                                                AS date,        -- Week
-  /*FROM_UNIXTIME(24*60*60*FLOOR(ts/(1000*1000*1000*24*60*60)))         AS date, -- Day*/
+
+  FROM_UNIXTIME(24*60*60*(
+    FLOOR((ts/(1000*1000*1000*24*60*60) - (FLOOR(TO_UNIXTIME(CURRENT_TIMESTAMP)/(24*60*60)))%7)/7)*7
+     + (FLOOR(TO_UNIXTIME(CURRENT_TIMESTAMP)/(24*60*60)))%7)
+  )                                                           AS date,   -- Week
+  /*FROM_UNIXTIME(24*60*60*FLOOR(ts/(1000*1000*1000*24*60*60))) AS date, -- Day*/
   100.0*SUM(IF(action <> 'none' AND action IS NOT NULL,1,0))/COUNT(*) AS archiveRatio,
   COUNT(*)                                                            AS cnt
 FROM wayback_daily

@@ -2,30 +2,25 @@
  * Owner: rrayborn@mozilla.com
  * Reviewer: TODO@mozilla.com
  * Status: Draft
- * URL: https://sql.telemetry.mozilla.org/queries/981
+ * URL: https://sql.telemetry.mozilla.org/queries/985
  * Dashboard: https://sql.telemetry.mozilla.org/dashboard/wayback-machine-no-more-404s-executive-summary
  */
 
 SELECT
-  date             AS date,
-  IF(num_actions = 1, -- Label logics
-    '1',
-    IF(num_actions >= 16,
-      '16+',
-      CONCAT(CONCAT(CAST(num_actions AS varchar),'-'),CAST((2*num_actions-1) AS varchar))
-    )
-  )                AS num_404s,
-  MAX(num_actions) AS num_actions,
-  COUNT(*)         AS num_users
+  date                         AS date,
+  COUNT(*)                     AS num_users,
+  SUM(pings)                   AS num_pings,
+  AVG(pings)                   AS average_pings,
+  APPROX_PERCENTILE(pings,0.5) AS median_pings
 FROM
   (SELECT -- Change commented lines to make this day/week based
     FROM_UNIXTIME(24*60*60*(
       FLOOR((ts/(1000*1000*1000*24*60*60) - (FLOOR(TO_UNIXTIME(CURRENT_TIMESTAMP)/(24*60*60)))%7)/7)*7
        + (FLOOR(TO_UNIXTIME(CURRENT_TIMESTAMP)/(24*60*60)))%7)
-    )                                                           AS date, -- Week
-    /*FROM_UNIXTIME(24*60*60*FLOOR(ts/(1000*1000*1000*24*60*60))) AS date, -- Day*/
+    )                                                           AS date,   -- Week
+    --FROM_UNIXTIME(24*60*60*FLOOR(ts/(1000*1000*1000*24*60*60))) AS date, -- Day
     uuid                                                        AS uuid,
-    CAST(POW(2,FLOOR(LOG2(COUNT(*)))) as bigint)              AS num_actions -- Powers of 2
+    COUNT(*)                                                    AS pings
   FROM wayback_daily
   WHERE
     uuid IS NOT NULL
@@ -34,5 +29,4 @@ FROM
     AND ts <  1000*1000*1000*FLOOR(TO_UNIXTIME(CURRENT_TIMESTAMP)/(24*60*60))*(24*60*60) -- Max Date (yesterday)
   GROUP BY 1,2
   )
-GROUP BY 1,2
-ORDER BY 3,1
+GROUP BY 1
