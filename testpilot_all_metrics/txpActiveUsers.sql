@@ -1,7 +1,7 @@
 /*
  * Owner: rrayborn@mozilla.com
  * Reviewer: msamuel@mozilla.com
- * Status: Draft
+ * Status: Reviewed
  * URL: https://sql.telemetry.mozilla.org/queries/732/source
  * Dashboards: https://sql.telemetry.mozilla.org/dashboard/txp-executive-summary
  */
